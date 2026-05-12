@@ -1,8 +1,8 @@
 {
-  "functions": { "api/*.php": { "runtime": "vercel-php@0.7.2" } },
-  "routes": [
-    { "src": "/privacy(/?)", "dest": "/api/privacy.php" },
-    { "src": "/terms(/?)", "dest": "/api/terms.php" },
-    { "src": "/(.*)", "dest": "/api/index.php" }
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/(.*)", "destination": "/api/index.php" }
   ]
 }
