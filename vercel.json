@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/", "destination": "/api/index.php" },
     { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms", "destination": "/terms.html" },
-    { "source": "/(.*)", "destination": "/api/index.php" }
+    { "source": "/terms", "destination": "/terms.html" }
   ]
 }
