@@ -2,15 +2,17 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>AWR Crow</title>
+    <title>AWR Crow - Auth</title>
     <style>
         body { background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        .btn { background: #fe2c55; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .card { background: #1e1e1e; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #fe2c55; }
+        .btn { background: #fe2c55; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
-    <div style="text-align:center;">
-        <h2>AWR Crow</h2>
+    <div class="card">
+        <h2 style="color: #fe2c55;">AWR Crow</h2>
+        <p>اضغط للمتابعة عبر بيئة الاختبار</p>
         <a href="https://www.tiktok.com/v2/auth/authorize/?client_key=sbawsudq1bxhkm3b3y&scope=user.info.basic&response_type=code&redirect_uri=https://my-tiktok-auth.vercel.app/api/callback.php&state=awr" class="btn">Login with TikTok</a>
     </div>
 </body>
