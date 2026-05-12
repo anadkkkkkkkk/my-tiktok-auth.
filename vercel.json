@@ -2,8 +2,8 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/tiktok-verify.txt", "destination": "/tiktok-verify.txt" },
-    { "source": "/", "destination": "/api/index.php" },
     { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms", "destination": "/terms.html" }
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/(.*)", "destination": "/api/index.php" }
   ]
 }

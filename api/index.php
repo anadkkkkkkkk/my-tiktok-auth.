@@ -8,6 +8,7 @@ $redirect_uri = 'https://my-tiktok-auth.vercel.app/';
 <html lang="ar" dir="rtl">
 <head>
     <meta name="tiktok-verification" content="verified">
+    <meta name="tiktok-verification" content="verified">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AWR Crow - TikTok Auth</title>
