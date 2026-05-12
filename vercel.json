@@ -1,9 +1,12 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/tiktok-verify.txt", "destination": "/tiktok-verify.txt" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms", "destination": "/terms.html" },
-    { "source": "/(.*)", "destination": "/api/index.php" }
+  "version": 2,
+  "functions": {
+    "api/index.php": { "runtime": "vercel-php@0.7.2" }
+  },
+  "routes": [
+    { "src": "/privacy", "dest": "/privacy.html" },
+    { "src": "/terms", "dest": "/terms.html" },
+    { "src": "/tiktok-verify.txt", "dest": "/tiktok-verify.txt" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
   ]
 }
