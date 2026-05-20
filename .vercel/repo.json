@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_gAXgGxAaEMesCEQPv4xKK24RBu5Z",
+      "name": "my-tiktok-auth",
+      "directory": ".",
+      "orgId": "team_RNswl0ippOL3nMi6NG4ELgsQ"
+    }
+  ]
+}
