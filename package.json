@@ -1,0 +1,16 @@
+{
+  "name": "my-tiktok-auth",
+  "version": "1.0.0",
+  "description": "TikTok Dashboard Bot",
+  "main": "api/bot.js",
+  "scripts": {
+    "start": "node api/bot.js"
+  },
+  "dependencies": {
+    "grammy": "^1.22.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
+

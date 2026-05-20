@@ -1,19 +1,36 @@
 const { Bot } = require("grammy");
-const { execSync } = require("child_process");
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
+
 const bot = new Bot(process.env.TELEGRAM_TOKEN);
 
-// معالجة الملفات الصوتية مباشرة
-bot.on("message:audio", async (ctx) => {
-  ctx.reply("🎚️ جارٍ معالجة الصوت وإضافة الصدى...");
-  const file = await ctx.getFile();
-  await file.download("./input.mp3");
-
-  // إضافة صدى احترافي
-  execSync('ffmpeg -i input.mp3 -af "aecho=0.8:0.9:500:0.4" output.mp3');
-  
-  await ctx.replyWithAudio("./output.mp3", { caption: "✅ تم إضافة الصدى بنجاح!" });
+// إضافة هذا السطر لنرى إذا كان البوت يستلم الرسائل فعلاً
+bot.on("message", (ctx) => {
+  console.log("📥 رسالة جديدة وصلت من: " + ctx.from.first_name);
 });
 
-module.exports = async (req, res) => {
-  await bot.handleUpdate(req.body, res);
-};
+bot.on(["message:audio", "message:voice"], async (ctx) => {
+  console.log("🎵 جاري معالجة صوت...");
+  ctx.reply("⚙️ جاري المعالجة...");
+  
+  const file = await ctx.getFile();
+  const inputPath = `./input.mp3`;
+  const outputPath = `./output.mp3`;
+  
+  await file.download(inputPath);
+
+  ffmpeg(inputPath)
+    .audioFilters(['aecho=0.8:0.9:500:0.4'])
+    .save(outputPath)
+    .on('end', async () => {
+      await ctx.replyWithAudio(outputPath);
+      console.log("✅ تم الإرسال بنجاح");
+    })
+    .on('error', (err) => {
+      console.error("❌ خطأ:", err);
+      ctx.reply("خطأ: " + err.message);
+    });
+});
+
+bot.start();
+console.log("البوت الآن يستمع...");
