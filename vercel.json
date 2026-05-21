@@ -1,11 +1,13 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/auth.js", "use": "@vercel/node" },
-    { "src": "api/refresh.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/auth", "dest": "api/auth.js" },
-    { "src": "/api/refresh", "dest": "api/refresh.js" }
+  "headers": [
+    {
+      "source": "/tiktokF9Obu0zL35lAg4B93QKkcO6EHVKdN3W0.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    }
   ]
 }
