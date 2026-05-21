@@ -16,7 +16,7 @@ const AccountSchema = new mongoose.Schema({
 });
 const Account = mongoose.model("Account", AccountSchema);
 
-const bot = new Bot(process.env.TELEGRAM_TOKEN);
+const bot = new Bot(process.env.BOT_TOKEN);
 
 bot.on("message", async (ctx) => {
     const text = ctx.message.text || "التوكن المستلم";
